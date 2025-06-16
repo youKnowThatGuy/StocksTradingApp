@@ -1,0 +1,4 @@
+[0m[[0m[0mdebug[0m] [0m[0m> Exec(scalaVersion, None, None)[0m
+[0m[[0m[0mdebug[0m] [0m[0mEvaluating tasks: scalaVersion[0m
+[0m[[0m[0minfo[0m] [0m[0m2.13.8[0m
+[0m[[0m[0mdebug[0m] [0m[0m> Exec(idea-shell, None, None)[0m

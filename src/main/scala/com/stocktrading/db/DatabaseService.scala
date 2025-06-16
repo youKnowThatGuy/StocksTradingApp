@@ -1,11 +1,11 @@
 package com.stocktrading.db
 
-import com.stocktrading.model.{Stock, StockLending}
+import com.stocktrading.model.{Active, LendingStatus, Overdue, Returned, Stock, StockLending}
 import com.typesafe.scalalogging.LazyLogging
 
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 import java.time.Instant
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 case class  DatabaseServiceConfig(
   url: String,
@@ -13,19 +13,19 @@ case class  DatabaseServiceConfig(
   password: String
 )
 
-object DatabaseService extends LazyLogging {
+class DatabaseService extends LazyLogging {
 
   private var config: Option[DatabaseServiceConfig] = None
 
-  def setConfig(dbconfig: DatabaseServiceConfig): Unit = {
-    config = Option(dbconfig) 
+  def setConfig(dbConfig: DatabaseServiceConfig): Unit = {
+    config = Option(dbConfig)
   }
   
   private def getConnection: Try[Connection] = Try {
     Class.forName("com.ibm.db2.jcc.DB2Driver")
     config match{
       case Some(cfg) => 
-        DriverManager.getConnection(config.url, config.user, config.password)
+        DriverManager.getConnection(cfg.url, cfg.user, cfg.password)
       case None => 
         throw new IllegalStateException("Database config is not set")
     }
@@ -33,18 +33,36 @@ object DatabaseService extends LazyLogging {
   
   def saveStock(stock: Stock): Try[Unit] = {
     val query = """
-      MERGE INTO stocks (symbol, name, current_price, last_updated)
-      VALUES (?, ?, ?, ?)
-    """
+    UPDATE stocks
+    SET name = ?, current_price = ?, last_updated = ?
+    WHERE symbol = ?
+  """
     
     getConnection.flatMap { conn =>
       Try {
         val stmt = conn.prepareStatement(query)
-        stmt.setString(1, stock.symbol)
-        stmt.setString(2, stock.name)
-        stmt.setBigDecimal(3, stock.currentPrice.bigDecimal)
-        stmt.setTimestamp(4, java.sql.Timestamp.from(stock.lastUpdated))
-        stmt.executeUpdate()
+        stmt.setString(1, stock.name)
+        stmt.setBigDecimal(2, stock.currentPrice.bigDecimal)
+        stmt.setTimestamp(3, java.sql.Timestamp.from(stock.lastUpdated))
+        stmt.setString(4, stock.symbol)
+        val rowsUpdated = stmt.executeUpdate()
+        if (rowsUpdated == 0) {
+          logger.info("Stock not found, inserting new record to STOCKS table")
+          val insertQuery = """
+          INSERT INTO stocks (symbol, name, current_price, last_updated)
+          VALUES (?, ?, ?, ?)
+          """
+          val insertStmt = conn.prepareStatement(insertQuery)
+          insertStmt.setString(1, stock.symbol)
+          insertStmt.setString(2, stock.name)
+          insertStmt.setBigDecimal(3, stock.currentPrice.bigDecimal)
+          insertStmt.setTimestamp(4, java.sql.Timestamp.from(stock.lastUpdated))
+          insertStmt.executeUpdate()
+          insertStmt.close()
+        }
+
+        logger.info("Stock not found, inserting new record to STOCKS table")
+
         stmt.close()
         logger.info(s"Stock saved: ${stock.symbol}")
         conn.close()

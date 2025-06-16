@@ -1,0 +1,4 @@
+[0m[[0m[31merror[0m] [0m[0m/Users/klimnikishinofficialgmail.com/scala-workspace/StocksTradingApp/src/main/scala/com/stocktrading/db/DatabaseService.scala:58:50: ';' expected but ')' found.[0m
+[0m[[0m[31merror[0m] [0m[0m          insertStmt.setTimestamp(4, Instant.now))[0m
+[0m[[0m[31merror[0m] [0m[0m                                                 ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

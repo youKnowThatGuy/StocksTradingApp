@@ -1,7 +1,9 @@
 package com.stocktrading.kafka
 
+import com.stocktrading.model.Models.{stockLendingEncoder, stockPriceEncoder}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
-import org.apache.kafka.clients.consumer.{KafkaConsumer, ConsumerConfig}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
+import com.stocktrading.model.{StockLending, StockPrice}
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import io.circe.syntax._
 import io.circe.parser._

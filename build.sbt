@@ -1,6 +1,6 @@
 name := "stock-trading-simulation"
 version := "0.1.0"
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.10"
 
 libraryDependencies ++= Seq(
   // Kafka
